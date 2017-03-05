@@ -1,4 +1,16 @@
 {
+  "name": "offworks/wizard",
+  "description": "A simple wizard capable console based on symfony/console",
+  "license": "MIT",
+  "keywords": ["console", "command", "symfony/console", "php"],
+  "authors": [{
+    "name": "Ahmad Rahimie Ahmad Zailani",
+    "email": "newrehmi@gmail.com",
+    "role": "lead"
+  }],
+  "support": {
+    "issues": "https://github.com/offworks/wizard/issues"
+  },
   "require": {
     "symfony/console": "v3.2.4"
   },
