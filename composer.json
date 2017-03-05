@@ -12,7 +12,7 @@
     "issues": "https://github.com/offworks/wizard/issues"
   },
   "require": {
-    "symfony/console": "v3.2.4"
+    "symfony/console": "~3.2"
   },
   "autoload": {
     "psr-4": {
