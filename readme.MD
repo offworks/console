@@ -1,5 +1,5 @@
 # Offworks\Wizard
-A symfony/console based console, a simple wizard capable console.
+A simple wizard capable console based on symfony/console.
 
 ### What's new?
 Nothing new. Except changes in a way command is handled. And added WizardCommand which helps you execute symfony commands interactively.
@@ -15,7 +15,7 @@ composer require offworks/wizard
 
 # Usages
 ## Set up your wizard
-```
+```php
 $wizard = \Offworks\Wizard\Console::createWizard();
 
 // add your command in between.
@@ -52,7 +52,7 @@ class SendMail extends Command
 }
 ```
 Then add the command.
-```
+```php
 $wizard->add(new \App\Commands\SendMail);
 
 $wizard->run();
