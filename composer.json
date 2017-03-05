@@ -2,7 +2,7 @@
   "name": "offworks/wizard",
   "description": "A simple wizard capable console based on symfony/console",
   "license": "MIT",
-  "keywords": ["console", "command", "symfony/console", "php"],
+  "keywords": ["console", "command", "wizard", "symfony", "php"],
   "authors": [{
     "name": "Ahmad Rahimie Ahmad Zailani",
     "email": "newrehmi@gmail.com",
