@@ -135,6 +135,92 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
     }
 
     /**
+     * @param $message
+     * @param null $key
+     * @param array $data
+     * @param bool $structureChangable
+     * @param int $depth
+     * @return bool|float|int|mixed|string
+     */
+    public function configureArray($message, $key = null, array $data, $structureChangable = false, $depth = 0)
+    {
+        $type = gettype($data);
+
+        if($type == 'scalar')
+            return $this->ask($message);
+
+        $choices = array();
+        $types = array();
+
+        foreach ($data as $answer => $value) {
+            $types[$answer] = gettype($value);
+
+            if ($types[$answer] == 'array') {
+                $choices[$answer] = '<info>' . $answer . '</info> array';
+            }
+            else {
+                $value = $types[$answer] == 'boolean' ? ($value ? 'true' : 'false') : $value;
+                $choices[$answer] = '<info>' . $answer . '</info> ' . '<comment>' . $value . '</comment>';
+            }
+        }
+
+        $choices['save'] = array(
+            'description' => 'save',
+            'option' => 'y'
+        );
+
+        if ($structureChangable)
+            $choices['change_type'] = array(
+                'description' => 'change type',
+                'option' => 'c'
+            );
+
+        $answer = $this->simplyChoose($message, $choices, 1);
+
+        if ($answer == 'save')
+            return $data;
+
+        if ($answer == 'change_type') {
+            $changedType = $this->simplyChoose('Change type for [' . $key . '] : ', array(
+                'array' => 'array',
+                'scalar' => 'scalar',
+            ), 1);
+        }
+
+        $absoluteKey = $key ? $key . '.' . $answer : $answer;
+
+        $answerType = $types[$answer] == 'integer' ? 'float' : $types[$answer];
+
+        if($types[$answer] == 'array')
+        {
+            $data[$answer] = $this->configureArray('Set <info>' . $absoluteKey . '</info> : ', $absoluteKey, $data[$answer], $structureChangable, $depth + 1);
+        }
+        else
+        {
+            if($types[$answer] == 'boolean')
+            {
+                $data[$answer] = $this->simplyChoose('Set <info>' . $absoluteKey . '</info> [<comment>' . ($data[$answer] ? 'true' : 'false') . '</comment>] : ', array(
+                    'true' => 'true',
+                    'false' => 'false'
+                ), 1) === 'true' ? true : false;
+            }
+            else
+            {
+                $data[$answer] = $this->askLn('Set <info>' . $absoluteKey . '</info> [<comment>' . $data[$answer] .'</comment>] : ');
+                settype($data[$answer], $answerType);
+            }
+        }
+
+        return $this->configureArray($message, $key, $data);
+    }
+
+    public function askLn($question, $default = null)
+    {
+        $this->writeLn($question);
+        return $this->ask(' > ', $default);
+    }
+
+    /**
      * Make a assoc choice question, except the selection is by number
      * @param $message
      * @param array $choices

@@ -28,7 +28,6 @@ class WizardCommand extends Command
         $this->setName('wizard');
         $this->setDescription('Access the wizard');
         $this->addOption('command', 'c', InputOption::VALUE_OPTIONAL);
-        $this->addOption('search', 's', InputOption::VALUE_OPTIONAL);
     }
     
     /**
@@ -54,6 +53,9 @@ class WizardCommand extends Command
                 if (!$command->isHidden() && $command->isEnabled())
                     $choices[$command->getName()] = '<comment>' . $command->getName() . '</comment> ' . $command->getDescription();
             }
+
+            if(count($choices) == 0)
+                return $this->write('<error>Oops.. there isn\'t any command added.</error>');
 
             $name = $this->simplyChoose('<info>Select your command :</info>', $choices, 1);
         } else {

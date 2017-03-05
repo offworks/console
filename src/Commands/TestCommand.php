@@ -19,12 +19,6 @@ class TestCommand extends Command
     {
         $this->setName('test');
         $this->setDescription('Just testing.');
-        $this->addArgument('foo', InputArgument::REQUIRED, 'Fill in the foo like you re going to poop.');
-        $this->addArgument('bar', InputArgument::OPTIONAL, 'This is just optional just in case.');
-        $this->addArgument('baz', InputArgument::OPTIONAL, 'And another optional argument.');
-        $this->addOption('yoyo', 'y', InputOption::VALUE_REQUIRED, 'require man.');
-        $this->addOption('live', 'e', InputOption::VALUE_NONE, 'To live healthy');
-        $this->addOption('die', 'm', InputOption::VALUE_NONE, 'To live sadly');
     }
 
     /**
@@ -37,5 +31,26 @@ class TestCommand extends Command
      */
     public function handle(Arguments $arguments, Options $options)
     {
+        var_dump($this->configureArray('Configure this message :', null, array(
+            'env' => 'dev',
+            'is_double' => 10.5,
+            'factories' => array(
+                'configurable' => false,
+                'session' => array(
+                    'class' => 'My\\Session',
+                    'dependencies' => 'ohho'
+                ),
+                'url' => array(
+                    'class' => 'My\\UrlFactory',
+                    'dependencies' => 'hehe'
+                )
+            ),
+            'db' => array(
+                'host' => 'localhost',
+                'user' => 'root',
+                'pass' => '',
+                'name' => 'dorato'
+            )
+        )));
     }
 }
