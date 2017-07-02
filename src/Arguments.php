@@ -1,18 +1,26 @@
 <?php
 namespace Offworks\Wizard;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 
 class Arguments
 {
     /**
-     * @var array
+     * @var InputInterface
      */
-    private $arguments;
+    protected $input;
 
-    public function __construct(InputInterface $input)
+    /**
+     * @var Command
+     */
+    protected $command;
+
+    public function __construct(Command $command, InputInterface $input)
     {
-        $this->arguments = $input->getArguments();
+        $this->command = $command;
+
+        $this->input = $input;
     }
 
     /**
@@ -23,17 +31,20 @@ class Arguments
      */
     public function get($name, $default = null)
     {
-        return $this->has($name) ? $this->arguments[$name] : $default;
+        return $this->has($name) ? $this->input->getArgument($name) : $default;
     }
 
     /**
      * Set argument
      * @param $name
      * @param $value
+     * @return $this
      */
     public function set($name, $value)
     {
-        $this->arguments[$name] = $value;
+        $this->input->setArgument($name, $value);
+
+        return $this;
     }
 
     /**
@@ -43,6 +54,6 @@ class Arguments
      */
     public function has($name)
     {
-        return isset($this->arguments[$name]);
+        return $this->input->hasArgument($name);
     }
 }

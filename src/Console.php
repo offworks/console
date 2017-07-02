@@ -3,6 +3,9 @@ namespace Offworks\Wizard;
 
 use Offworks\Wizard\Commands\WizardCommand;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Console extends Application
 {
@@ -23,5 +26,19 @@ class Console extends Application
         $console->setDefaultCommand($command->getName(), false);
 
         return $console;
+    }
+
+    public function doRun(InputInterface $input, OutputInterface $output)
+    {
+        if($input->hasParameterOption(array('-w', '--wizard')))
+        {
+            $wizard = $this->get('wizard');
+            $command = $this->get($this->getCommandName($input));
+            $input = new WizardInput($wizard->getDefinition());
+            $input->setArgument('cmd', $command->getName());
+            return $wizard->run($input, new ConsoleOutput());
+        }
+
+        parent::doRun($input, $output);
     }
 }

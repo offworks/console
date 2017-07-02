@@ -6,6 +6,7 @@ use Offworks\Wizard\Command;
 use Offworks\Wizard\Options;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 
 class TestCommand extends Command
@@ -19,6 +20,11 @@ class TestCommand extends Command
     {
         $this->setName('test');
         $this->setDescription('Just testing.');
+        $this->setDefinition(new InputDefinition(array(
+            new InputOption('hello', 'z', InputOption::VALUE_OPTIONAL, 'Test test'),
+            new InputOption('hellor', null, InputOption::VALUE_NONE, 'Test test'),
+            new InputOption('darta', 't', InputOption::VALUE_NONE, 'Test test')
+        )));
     }
 
     /**
@@ -31,6 +37,8 @@ class TestCommand extends Command
      */
     public function handle(Arguments $arguments, Options $options)
     {
+//        $this->write($options->get('hello'));
+
         var_dump($this->configureArray('Configure this message :', null, array(
             'env' => 'dev',
             'is_double' => 10.5,

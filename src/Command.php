@@ -21,7 +21,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        return $this->handle(new Arguments($input), new Options($input));
+        return $this->handle(new Arguments($this, $input), new Options($this, $input));
     }
 
     public function configure()

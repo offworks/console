@@ -10,6 +10,7 @@ use Offworks\Wizard\Options;
 use Offworks\Wizard\WizardInput;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -27,14 +28,16 @@ class WizardCommand extends Command
     {
         $this->setName('wizard');
         $this->setDescription('Access the wizard');
-        $this->addOption('command', 'c', InputOption::VALUE_OPTIONAL);
+//        $this->addOption('command', 'c', InputOption::VALUE_OPTIONAL);
+        $this->addArgument('cmd', InputArgument::OPTIONAL, 'Select command');
     }
-    
+
     /**
      * Handle the command execution
      * use $this->app to get the application instance
      * @param Arguments $args
      * @param Options $options
+     * @return mixed
      */
     public function handle(Arguments $args, Options $options)
     {
@@ -45,12 +48,12 @@ class WizardCommand extends Command
         /** @var Command[] $commands */
         $commands = $app->all();
 
-        if (!$options->has('command')) {
+        if (!$args->has('cmd')) {
             INDEX:
             $choices = array();
 
             foreach ($commands as $command) {
-                if (!$command->isHidden() && $command->isEnabled())
+                if (!$command->isHidden() && $command->isEnabled() && $command->getName() != $this->getName() && !in_array($command->getName(), array('list', 'help')))
                     $choices[$command->getName()] = '<comment>' . $command->getName() . '</comment> ' . $command->getDescription();
             }
 
@@ -59,7 +62,7 @@ class WizardCommand extends Command
 
             $name = $this->simplyChoose('<info>Select your command :</info>', $choices, 1);
         } else {
-            $name = $options->get('command');
+            $name = $args->get('cmd');
         }
 
         $command = $app->find($name);
@@ -126,23 +129,50 @@ class WizardCommand extends Command
                 'value' => ''
             );
 
-            $value = $this->simplyChoose('<info>Configure optional options : [y to submit]</info>', $optionals, 1);
+            $selection = $this->simplyChoose('<info>Configure optional options : [y to submit]</info>', $optionals, 1);
 
-            if ($value != '') {
+            if ($selection != '') {
                 /** @var InputOption $option */
-                $option = $optionsMap[$value];
+                $option = $optionsMap[$selection];
+
+                $existingAnswer = $input->getOption($option->getName());
 
                 if ($option->acceptValue()) {
                     $this->writeLn($option->getDescription());
-                    $answer = $this->ask('Set [' . $option->getName() . '] : ');
-                    $optionals[$value] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription() . ' <info>(' . $answer . ')</info>';
+
+                    if($option->isValueOptional()) {
+                        if($existingAnswer === true)
+                            $answer = $this->ask('Set/disable [' . $option->getName() .'] : ');
+                        else
+                            $answer = $this->ask('Set/enable [' . $option->getName() .'] : ');
+                    } else {
+                        $answer = $this->ask('Set [' . $option->getName() . '] : ');
+                    }
+
+                    $answerLabel = '(' . $answer . ')';
+
+                    if(!$answer && $option->isValueOptional())
+                    {
+                        if(!$answer && !$existingAnswer)
+                        {
+                            $answer = true;
+                            $answerLabel = '(enabled)';
+                        }
+                        else
+                        {
+                            $answer = false;
+                            $answerLabel = '';
+                        }
+                    }
+
+                    $optionals[$selection] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription() . ' <info>' . $answerLabel . '</info>';
                 } else {
                     if ($input->getOption($option->getName()) === true) {
                         $answer = false;
-                        $optionals[$value] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription();
+                        $optionals[$selection] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription();
                     } else {
                         $answer = true;
-                        $optionals[$value] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription() . ' <info>(enabled)</info>';
+                        $optionals[$selection] = '<magneto>' . $option->getName() . '</magneto> ' . $option->getDescription() . ' <info>(enabled)</info>';
                     }
                 }
 
@@ -167,14 +197,22 @@ class WizardCommand extends Command
         }
 
         foreach($input->getOptions() as $name => $value) {
+            $option = $command->getDefinition()->getOption($name);
+
             if (!$value)
                 continue;
 
-            $option = $command->getDefinition()->getOption($name);
-            $name = $option->getShortcut();
-            $commands[] = '-' . $name;
-            if ($option->acceptValue())
-                $commands[] = strpos($value, ' ') !== false ? '"' . $value . '"' : $value;
+            $shortcut = $option->getShortcut();
+
+            $acceptValue = $option->isValueRequired() || ($option->isValueOptional() && $value !== true) ? true : false;
+
+            if($shortcut) {
+                $commands[] = '-' . $shortcut;
+                if ($acceptValue)
+                    $commands[] = strpos($value, ' ') !== false ? '"' . $value . '"' : $value;
+            } else {
+                $commands[] = '--' . $option->getName() . ($acceptValue ? (strpos($value, ' ') !== false ? ' "' . $value . '"' : '=' . $value) : '');
+            }
         }
 
         return '<comment>' . implode(' ', $commands) . '</comment>';
